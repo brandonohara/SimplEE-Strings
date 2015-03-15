@@ -12,31 +12,48 @@
 	);
 
 	class Simplee_strings {
+		public $tagparts = array();
 		public $params = array();
 		public $return_data = "";
 		public $plugin_name = SIMPLEE_STRINGS_NAME;
 		
 		function __construct(){
-			$text = ee()->TMPL->tagdata;
 			$this->params = ee()->TMPL->tagparams;
+			$this->tagparts = ee()->TMPL->tagparts;
+			$this->return_data = ee()->TMPL->tagdata;
 			
-			if($this->_variable("remove")){
-				$text = str_replace($this->_variable("remove"), "", $text);
-			}
-			if($this->_varisset("url_title")){
-				$text = strtolower(str_replace(" ", "-", $text));
+			if(!isset($tagparts[1])){
+				foreach($this->params as $param => $value){
+					if(method_exists($this, $param)){
+						$this->return_data = $this->$param($value);
+					}
+				}
 			}
 			
-			$this->return_data = $text;
+			return $this->return_data;
 		}
 		
-		function _varisset($name){
-			return isset($this->params[$name]) ? true : false;
+		private function _value($value, $default = NULL){
+			return $value != "" ? $value : ee()->TMPL->fetch_param("value", $default);
 		}
 		
-		function _variable($name){
-			$variable = ee()->TMPL->fetch_param($name);
-			return $variable != "" ? $variable : false;
+		private function _run_method($value){
+			return $value == "yes" ? true : false;
+		}
+		
+		function remove($value = NULL){
+			$value = $this->_value($value);
+			return str_replace($value, "", $this->return_data);
+		}
+		
+		function replace($value = NULL){
+			$arr = explode("|", $this->_value($value));
+			return isset($arr[1]) ? str_replace($arr[0], $arr[1], $this->return_data) : $this->return_data;
+		}
+		
+		function url_title($value = NULL){
+			$value = $this->_value($value, "yes");
+			return $this->_run_method($value) ? strtolower(str_replace(" ", "-", $this->return_data)) : $this->return_data;
 		}
 		
 		function usage(){
