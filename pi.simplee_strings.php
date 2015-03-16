@@ -56,7 +56,7 @@
 			return $this->_run_method($value) ? strtolower(str_replace(" ", "-", $this->return_data)) : $this->return_data;
 		}
 		
-		function usage(){
+		public static function usage(){
 			return "";
 		}
 		
